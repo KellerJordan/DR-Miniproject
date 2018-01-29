@@ -1,2 +1,3 @@
-# Dimensionality-Reduction-Miniproject
-Applying t-SNE, LargeVis, and TriMap to RNAseq data
+# Dimensionality-Reduction
+
+Experiments in dimensionality reduction: TriMap, t-SNE, LargeVis on ISOLET dataset
