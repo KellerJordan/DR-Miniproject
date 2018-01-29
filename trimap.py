@@ -4,7 +4,6 @@ pytorch trimap implementation
 """
 
 from sklearn.neighbors import NearestNeighbors as knn
-from sklearn.decomposition import TruncatedSVD
 import numpy as np
 
 
@@ -36,15 +35,10 @@ class TriMap(nn.Module):
     def get_embeddings(self):
         return self.Y._parameters['weight'].cpu().data.numpy()
 
+
+def embed(X, initial_dims=50, max_iter=2000, verbose=False):
     
-def embed(X, initial_dims=50, max_iter=2000):
-    
-    X -= np.min(X)
-    X /= np.max(X)
-    X -= np.mean(X, axis=0)
-    X = TruncatedSVD(n_components=initial_dims, random_state=0).fit_transform(X)
-    
-    triplets, weights = generate_triplets(X)
+    triplets, weights = generate_triplets(X, verbose=verbose)
 
     num_examples = X.shape[0]
     num_triplets = triplets.shape[0]
@@ -74,7 +68,7 @@ def embed(X, initial_dims=50, max_iter=2000):
             eta = eta * 0.5
         optimizer.param_groups[0]['lr'] = eta
 
-        if (i+1) % 100 == 0:
+        if verbose and (i+1) % 100 == 0:
             print('Iteration: %4d, Loss: %3.3f, Violated triplets: %0.4f' % (i+1, loss, viol))
 
     Y = model.get_embeddings()
@@ -87,7 +81,7 @@ Created on Sat May 27 12:46:25 2017
 
 @author: ehsanamid
 """
-def generate_triplets(X, kin=50, kout=10, kr=5, weight_adj=False, random_triplets=True):
+def generate_triplets(X, kin=50, kout=10, kr=5, weight_adj=False, random_triplets=True, verbose=False):
     num_extra = np.maximum(kin+50, 60) # look up more neighbors
     # ^ ???
     n = X.shape[0]
@@ -117,7 +111,7 @@ def generate_triplets(X, kin=50, kout=10, kr=5, weight_adj=False, random_triplet
                     rem.append(out)
                     l += 1
                     cnt += 1
-        if (i+1) % 500 == 0:
+        if verbose and (i+1) % 500 == 0:
             print('Generated triplets %d / %d' % (i+1, n))
     if random_triplets:
 #         kr = 5
@@ -138,7 +132,7 @@ def generate_triplets(X, kin=50, kout=10, kr=5, weight_adj=False, random_triplet
                 triplets_rand[i * kr + cnt] = [i, sim, out]
                 weights_rand[i * kr + cnt] = p_sim / p_out
                 cnt += 1
-            if (i+1) % 500 == 0:
+            if verbose and (i+1) % 500 == 0:
                 print('Generated random triplets %d / %d' % (i+1, n))
         triplets = np.vstack((triplets, triplets_rand))
         weights = np.hstack((weights, weights_rand))

@@ -4,11 +4,12 @@ from sklearn.neighbors import NearestNeighbors as knn
 
 def roc_metrics(nbrs_input, nbrs_output, input_k=50):
     n = nbrs_input.shape[0]
+    max_k = nbrs_output.shape[1]
 
     tp_list = []
     fp_list = []
 
-    for k in range(1, 100):
+    for k in range(1, max_k, 5):
         tp_rate = 0
         fp_rate = 0
         for i in range(n):
@@ -22,11 +23,12 @@ def roc_metrics(nbrs_input, nbrs_output, input_k=50):
 
 def mean_precision_recall(nbrs_input, nbrs_output, input_k=50):
     n = nbrs_input.shape[0]
+    max_k = nbrs_output.shape[1]
     
     recall_list = []
     precision_list = []
 
-    for k in range(1, 100):
+    for k in range(1, max_k, 5):
         recall = 0
         precision = 0
         for i in range(n):
