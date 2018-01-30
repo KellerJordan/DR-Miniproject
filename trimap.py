@@ -36,7 +36,8 @@ class TriMap(nn.Module):
         return self.Y._parameters['weight'].cpu().data.numpy()
 
 
-def embed(X, initial_dims=50, max_iter=2000, verbose=False):
+def embed(X, initial_dims=50, max_iter=2000, optimizer='sgd',
+          return_seq=False, verbose=False):
     
     triplets, weights = generate_triplets(X, verbose=verbose)
 
@@ -49,7 +50,20 @@ def embed(X, initial_dims=50, max_iter=2000, verbose=False):
     C = np.inf
 
     eta = 1000.0 / num_triplets * num_examples
-    optimizer = optim.SGD(model.parameters(), lr=eta)
+    
+    if optimizer == 'sgd':
+        optimizer = optim.SGD(model.parameters(), lr=eta)
+    elif optimizer == 'sgd-momentum':
+        optimizer = optim.SGD(model.parameters(), lr=eta, momentum=.9)
+    elif optimizer == 'adam':
+        optimizer = optim.Adam(model.parameters())
+    elif optimizer == 'adadelta':
+        optimizer = optim.Adadelta(model.parameters())
+    elif optimizer == 'rmsprop':
+        optimizer = optim.RMSprop(model.parameters())
+    
+    if return_seq:
+        Y_seq = []
 
     for i in range(max_iter):
         old_C = C
@@ -67,11 +81,19 @@ def embed(X, initial_dims=50, max_iter=2000, verbose=False):
         else:
             eta = eta * 0.5
         optimizer.param_groups[0]['lr'] = eta
+        
+        if return_seq and i < 500:
+            Y = model.get_embeddings()
+            Y_seq.append(Y)
 
         if verbose and (i+1) % 100 == 0:
             print('Iteration: %4d, Loss: %3.3f, Violated triplets: %0.4f' % (i+1, loss, viol))
-
+            
     Y = model.get_embeddings()
+    
+    if return_seq:
+        return Y, Y_seq
+    
     return Y
 
 
