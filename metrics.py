@@ -50,8 +50,8 @@ class Metrics:
                 n_tp = np.intersect1d(self.nbrs_input[i][:input_k], self.nbrs_output[i][:k]).shape[0]
                 recall += n_tp / input_k
                 precision += n_tp / k
-            recalls.append(recall)
-            precisions.append(precision)
+            recalls.append(recall / n)
+            precisions.append(precision / n)
         return precisions, recalls
     
     def trustworthiness_continuity(self):
