@@ -36,10 +36,10 @@ class TriMap(nn.Module):
         return self.Y._parameters['weight'].cpu().data.numpy()
 
 
-def embed(X, initial_dims=50, max_iter=2000, optimizer='sgd',
+def embed(X, kin = 50, initial_dims=50, max_iter=2000, optimizer='sgd',
           return_seq=False, verbose=False):
     
-    triplets, weights = generate_triplets(X, verbose=verbose)
+    triplets, weights = generate_triplets(X, kin = kin, verbose=verbose)
 
     num_examples = X.shape[0]
     num_triplets = triplets.shape[0]
